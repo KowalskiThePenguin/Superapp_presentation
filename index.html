@@ -1,540 +1,1100 @@
 <!DOCTYPE html>
+
 <html lang="ru">
+
 <head>
+
   <meta charset="UTF-8" />
+
   <title>Живой интерфейс LIFE</title>
+
   <style>
+
     * { box-sizing: border-box; }
+
     html, body {
+
       margin: 0;
+
       padding: 0;
+
       overflow: hidden;
+
       height: 100%;
+
       background: linear-gradient(to right, #2c5364, #203a43, #0f2027);
+
       font-family: 'Segoe UI', sans-serif;
+
     }
+
+
 
     canvas {
+
       position: absolute;
+
       top: 0;
+
       left: 0;
+
       z-index: 0;
+
     }
+
+
 
     #center-icon {
+
       position: absolute;
+
       left: 50%;
+
       top: 50%;
+
       transform: translate(-50%, -50%);
-      width: 100px;
-      height: 100px;
+
+      width: 135px;
+
+      height: 135px;
+
       background: linear-gradient(135deg, #00ffcc, #006b52);
+
       border-radius: 32% 68% 55% 45% / 65% 35% 65% 35%; /* Асимметричная форма */
+
       box-shadow:
+
         0 6px 12px rgba(0, 255, 204, 0.6),
+
         inset 0 0 15px #00ffd0,
+
         inset 0 -4px 10px #00875a;
-      font-size: 24px;
+
+      font-size: 32px;
+
       font-weight: 900;
+
       letter-spacing: 2px;
+
       color: #e0fff9;
+
       text-shadow:
+
         0 0 8px #00ffd0,
+
         0 2px 4px rgba(0, 150, 120, 0.6);
+
       display: flex;
+
       justify-content: center;
+
       align-items: center;
+
       cursor: pointer;
+
       user-select: none;
+
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+
                   box-shadow 0.4s ease;
+
       animation: glowPulse 4s infinite ease-in-out;
+
       z-index: 3;
+
     }
+
+
 
     @keyframes glowPulse {
+
       0%, 100% {
+
         box-shadow:
+
           0 6px 12px rgba(0, 255, 204, 0.6),
+
           inset 0 0 15px #00ffd0,
+
           inset 0 -4px 10px #00875a;
+
       }
+
       50% {
+
         box-shadow:
+
           0 8px 20px rgba(0, 255, 204, 0.9),
+
           inset 0 0 25px #00ffe0,
+
           inset 0 -5px 15px #00aa73;
+
       }
+
     }
+
+
 
     #center-icon:hover {
+
       transform: translate(-50%, -50%) scale(1.15) rotate(-2deg);
+
       box-shadow:
+
         0 10px 25px rgba(0, 255, 204, 1),
+
         inset 0 0 30px #00fff0,
+
         inset 0 -6px 20px #00cfa0;
+
     }
+
+
 
     #center-icon:active {
+
       transform: translate(-50%, -50%) scale(0.9) rotate(3deg);
+
       box-shadow:
+
         0 4px 8px rgba(0, 255, 204, 0.7),
+
         inset 0 0 10px #00ccaa,
+
         inset 0 -3px 6px #005c40;
+
     }
+
+
 
     .icon {
+
       position: absolute;
+
       width: 60px;
+
       height: 60px;
+
       border-radius: 16px;
+
       background: rgba(255, 255, 255, 0.05);
+
       border: 1px solid rgba(255, 255, 255, 0.08);
+
       backdrop-filter: blur(12px);
+
       -webkit-backdrop-filter: blur(12px);
+
       box-shadow:
+
         0 4px 10px rgba(0, 255, 204, 0.15),
+
         inset 0 0 0px rgba(255, 255, 255, 0.1);
+
       color: #00ffd0;
+
       font-size: 24px;
+
       display: flex;
+
       flex-direction: column;
+
       gap: 2px;
+
       justify-content: center;
+
       align-items: center;
+
       opacity: 0;
+
       transform: scale(0.6);
+
       transition: all 0.4s ease;
+
       z-index: 1;
+
       pointer-events: none;
+
     }
+
+
 
     .icon:hover {
+
       transform: scale(1.15);
+
       background: rgba(0, 255, 204, 0.08);
+
       border: 1px solid rgba(0, 255, 204, 0.2);
+
       box-shadow:
+
         0 0 12px rgba(0, 255, 204, 0.4),
+
         0 0 24px rgba(0, 255, 204, 0.2),
+
         inset 0 0 4px rgba(255, 255, 255, 0.05);
+
       pointer-events: auto;
+
     }
+
+
 
     .label {
-      font-size: 10px;
+
+      font-size: 8.5px;
+
       font-weight: 400;
+
       color: rgba(255, 255, 255, 0.65);
+
       letter-spacing: 0.5px;
+
       user-select: none;
+
+      text-align: center;
+
+
+
     }
+
 	.modal {
+
   position: fixed;
+
   top: 0; left: 0;
+
   width: 100vw; height: 100vh;
+
   background: rgba(0, 20, 20, 0.85);
+
   display: flex;
+
   justify-content: center;
+
   align-items: center;
+
   backdrop-filter: blur(8px);
+
   opacity: 0;
+
   pointer-events: none;
+
   transition: opacity 0.5s ease;
+
   z-index: 10;
+
 }
+
+
 
 .modal.show {
+
   opacity: 1;
+
   pointer-events: auto;
+
 }
+
+
 
 .modal-content {
+
   background: #012b2f;
+
   color: #00ffd0;
+
   padding: 30px;
+
   border-radius: 12px;
+
   max-width: 400px;
+
   width: 80%;
+
   text-align: center;
+
   box-shadow: 0 0 30px rgba(0, 255, 204, 0.4);
+
   transform: scale(0.8);
+
   transition: transform 0.4s ease;
+
 }
+
+
 
 .modal.show .modal-content {
+
   transform: scale(1);
+
 }
+
+
 
 .close-btn {
+
   position: absolute;
+
   top: 20px;
+
   right: 30px;
+
   font-size: 24px;
+
   color: #00ffd0;
+
   cursor: pointer;
+
   user-select: none;
+
 }
 
+
+
   </style>
+
 </head>
+
 <body>
+
+
 
 <canvas id="bg-canvas"></canvas>
 
+
+
 <div id="center-icon">LIFE</div>
 
+
+
 <!-- Иконки -->
-<div class="icon" id="icon1">🧘‍♂️<span class="label">Здоровье</span></div>
+
+<div class="icon" id="icon1">❤️<span class="label">Здоровье</span></div>
+
 <div class="icon" id="icon2">🧠<span class="label">Развитие</span></div>
-<div class="icon" id="icon3">💼<span class="label">Карьера</span></div>
+
+<div class="icon" id="icon3">💼<span class="label">Работа</span></div>
+
 <div class="icon" id="icon4">💰<span class="label">Финансы</span></div>
-<div class="icon" id="icon5">❤️<span class="label">Отношения</span></div>
-<div class="icon" id="icon6">🎉<span class="label">Развлечения</span></div>
-<div class="icon" id="icon7">🏡<span class="label">Дом</span></div>
-<div class="icon" id="icon8">🌍<span class="label">Окружение</span></div>
-<div class="icon" id="icon9">⏳<span class="label">Время</span></div>
-<div class="icon" id="icon10">🧭<span class="label">Цели</span></div>
+
+<div class="icon" id="icon5">🏠<span class="label">Квартиры</span></div>
+
+<div class="icon" id="icon6">🚗<span class="label">Авто рынок</span></div>
+
+<div class="icon" id="icon7">🚕<span class="label">Городское такси</span></div>
+
+<div class="icon" id="icon8">🚖<span class="label">М/городнее такси</span></div>
+
+<div class="icon" id="icon9">🚚<span class="label">М/народные перевозки</span></div>
+
+<div class="icon" id="icon10">🚛<span class="label">М/городние перевозки</span></div>
+
 <!-- Окно с информацией -->
+
 <div id="info-modal" class="modal">
+
   <div class="modal-content">
+
     <span class="close-btn">&times;</span>
+
     <div id="info-text"></div>
+
   </div>
+
 </div>
 
+
+
 <script>
+
   const canvas = document.getElementById('bg-canvas');
+
   const ctx = canvas.getContext('2d');
+
   canvas.width = window.innerWidth;
+
   canvas.height = window.innerHeight;
 
+
+
   const pointCount = 100;
+
   const points = [];
+
   let time = 0;
+
   let dragging = false;
 
+
+
   for (let i = 0; i < pointCount; i++) {
+
     points.push({
+
       x: Math.random() * canvas.width,
+
       y: Math.random() * canvas.height,
+
       vx: (Math.random() - 0.5) * 0.75,
+
       vy: (Math.random() - 0.5) * 0.75
+
     });
+
   }
+
+
 
   let mouse = { x: null, y: null, active: false };
+
   let mouseTimer = null;
 
+
+
   function activateMouse() {
+
     mouse.active = true;
+
     if (mouseTimer) clearTimeout(mouseTimer);
+
     mouseTimer = setTimeout(() => {
+
       mouse.active = false;
+
     }, 1000);
+
   }
+
+
 
   document.addEventListener('mousedown', (e) => {
+
     dragging = true;
+
     mouse.x = e.clientX;
+
     mouse.y = e.clientY;
+
     activateMouse();
+
   });
+
+
 
   document.addEventListener('mouseup', () => dragging = false);
+
   document.addEventListener('mousemove', (e) => {
+
     mouse.x = e.clientX;
+
     mouse.y = e.clientY;
+
     activateMouse();
+
   });
+
+
 
   document.addEventListener('touchstart', (e) => {
+
     dragging = true;
+
     if (e.touches.length > 0) {
+
       mouse.x = e.touches[0].clientX;
+
       mouse.y = e.touches[0].clientY;
+
       activateMouse();
+
     }
+
   });
+
+
 
   document.addEventListener('touchend', () => dragging = false);
+
   document.addEventListener('touchmove', (e) => {
+
     if (e.touches.length > 0) {
+
       mouse.x = e.touches[0].clientX;
+
       mouse.y = e.touches[0].clientY;
+
       activateMouse();
+
     }
+
   });
 
+
+
   function animateBackground() {
+
     time += 0.01;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let i = 0; i < pointCount; i++) {
-      for (let j = i + 1; j < pointCount; j++) {
-        const dx = points[i].x - points[j].x;
-        const dy = points[i].y - points[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 100) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(0,255,204,${1 - dist / 100})`;
-          ctx.moveTo(points[i].x, points[i].y);
-          ctx.lineTo(points[j].x, points[j].y);
-          ctx.stroke();
-        }
-      }
-    }
+
 
     for (let i = 0; i < pointCount; i++) {
+
+      for (let j = i + 1; j < pointCount; j++) {
+
+        const dx = points[i].x - points[j].x;
+
+        const dy = points[i].y - points[j].y;
+
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 100) {
+
+          ctx.beginPath();
+
+          ctx.strokeStyle = `rgba(0,255,204,${1 - dist / 100})`;
+
+          ctx.moveTo(points[i].x, points[i].y);
+
+          ctx.lineTo(points[j].x, points[j].y);
+
+          ctx.stroke();
+
+        }
+
+      }
+
+    }
+
+
+
+    for (let i = 0; i < pointCount; i++) {
+
       let p = points[i];
 
+
+
       if (dragging && mouse.x != null && mouse.y != null) {
+
         const dx = mouse.x - p.x;
+
         const dy = mouse.y - p.y;
+
         const dist = Math.sqrt(dx * dx + dy * dy);
+
         if (dist < 200) {
+
           const force = (200 - dist) / 3000;
+
           p.vx += (dx / dist) * force;
+
           p.vy += (dy / dist) * force;
+
         }
+
       }
+
+
 
       p.vx += Math.sin(time + i) * 0.001;
+
       p.vy += Math.cos(time + i) * 0.001;
+
       p.vx += (Math.random() - 0.5) * 0.005;
+
       p.vy += (Math.random() - 0.5) * 0.005;
 
+
+
       p.x += p.vx;
+
       p.y += p.vy;
 
+
+
       const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+
       const maxSpeed = 1.5;
+
       if (speed > maxSpeed) {
+
         p.vx *= maxSpeed / speed;
+
         p.vy *= maxSpeed / speed;
+
       }
 
+
+
       if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+
       if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
+
+
       ctx.beginPath();
+
       ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+
       ctx.fillStyle = '#00ffcc';
+
       ctx.fill();
+
     }
 
+
+
     requestAnimationFrame(animateBackground);
+
   }
+
+
 
   animateBackground();
 
+
+
   const center = document.getElementById("center-icon");
+
   let expanded = false;
 
+
+
   center.addEventListener("click", () => {
+
     const centerX = window.innerWidth / 2;
+
     const centerY = window.innerHeight / 2;
+
     const radius = Math.min(window.innerWidth, window.innerHeight) / 3;
 
+
+
     if (!expanded) {
+
       for (let i = 1; i <= 10; i++) {
+
         setTimeout(() => {
+
           const icon = document.getElementById("icon" + i);
+
           const angle = (2 * Math.PI / 10) * (i - 1);
+
           const x = centerX + radius * Math.cos(angle) - 30;
+
           const y = centerY + radius * Math.sin(angle) - 30;
+
           icon.style.left = `${x}px`;
+
           icon.style.top = `${y}px`;
+
           icon.style.opacity = "1";
-          icon.style.transform = `scale(1.1)`;
+
+          icon.style.transform = `scale(1.9)`;
+
           icon.style.pointerEvents = "auto";
+
         }, i * 70);
+
       }
+
     } else {
+
       for (let i = 1; i <= 10; i++) {
+
         setTimeout(() => {
+
           const icon = document.getElementById("icon" + i);
+
           icon.style.left = `${centerX - 30}px`;
+
           icon.style.top = `${centerY - 30}px`;
+
           icon.style.opacity = "0";
+
           icon.style.transform = `scale(0.6)`;
+
           icon.style.pointerEvents = "none";
+
         }, i * 40);
+
       }
+
     }
+
+
 
     expanded = !expanded;
+
   });
 
+
+
   window.onload = () => {
+
     const centerX = window.innerWidth / 2 - 30;
+
     const centerY = window.innerHeight / 2 - 30;
+
     for (let i = 1; i <= 10; i++) {
+
       const icon = document.getElementById("icon" + i);
+
       icon.style.left = `${centerX}px`;
+
       icon.style.top = `${centerY}px`;
+
       icon.style.opacity = "0";
+
       icon.style.transform = "scale(0.6)";
+
       icon.style.pointerEvents = "none";
+
     }
+
   };
+
+
 
   window.onresize = () => {
+
     canvas.width = window.innerWidth;
+
     canvas.height = window.innerHeight;
+
     if (expanded) {
+
       expanded = false;
+
       center.click(); // перестроить иконки после ресайза
+
     }
+
   };
+
   const modal = document.getElementById("info-modal");
+
 const modalContent = document.getElementById("info-text");
+
 const closeBtn = document.querySelector(".close-btn");
 
+
+
 const infoTexts = {
+
   icon1: `
+
     <h2>🧘‍♂️ Здоровье</h2>
+
     <p><strong>Кратко:</strong> Энергия, тело, иммунитет.</p>
+
     <p><strong>Описание:</strong> Здоровье — фундамент жизни. В приложении ты найдёшь:
+
     <ul>
+
       <li>Персональные трекеры сна, питания и воды</li>
+
       <li>Программы тренировок под твой уровень</li>
+
       <li>Уведомления для осанки, дыхания, растяжки</li>
+
       <li>Статистика самочувствия и активности</li>
+
     </ul></p>
+
     <p><strong>Результат:</strong> Ты чувствуешь себя энергичнее, меньше болеешь и быстрее восстанавливаешься.</p>
+
   `,
+
   icon2: `
+
     <h2>🧠 Развитие</h2>
+
     <p><strong>Кратко:</strong> Навыки, интеллект, рост.</p>
+
     <p><strong>Описание:</strong> Без развития ты стоишь на месте. В приложении:
+
     <ul>
+
       <li>Личная образовательная карта</li>
+
       <li>Краткие уроки (microlearning)</li>
+
       <li>Задачи недели: память, внимание, речь</li>
+
       <li>Чек-листы привычек (чтение, обучение)</li>
+
     </ul></p>
+
     <p><strong>Результат:</strong> Ты становишься умнее, увереннее, прокачаннее.</p>
+
   `,
+
   icon3: `
-    <h2>💼 Карьера</h2>
-    <p><strong>Кратко:</strong> Работа, рост, миссия.</p>
-    <p><strong>Описание:</strong> Карьерный рост:
-    <ul>
-      <li>Карта целей и навыков</li>
-      <li>Поддержка резюме и интервью</li>
-      <li>Фриланс, бизнес, продуктивность</li>
-      <li>Путь от стажёра до топа</li>
-    </ul></p>
-    <p><strong>Результат:</strong> Ты строишь карьеру с уверенностью и ростом дохода.</p>
-  `,
+
+  <h2>💼 Работа</h2>
+
+  <p><strong>Кратко:</strong> Вакансии, поиск, развитие.</p>
+
+  <p><strong>Описание:</strong> Умная система поиска и подбора работы:
+
+  <ul>
+
+    <li>Личный профиль и резюме с ИИ-поддержкой</li>
+
+    <li>Автоматический подбор подходящих вакансий</li>
+
+    <li>Оценка компаний: зарплаты, отзывы, условия</li>
+
+    <li>Чат с рекрутёрами без посредников</li>
+
+  </ul></p>
+
+  <p><strong>Результат:</strong> Ты быстро находишь честную и выгодную работу, где ценят людей, а не только резюме.</p>
+
+`,
+
+
+
   icon4: `
+
     <h2>💰 Финансы</h2>
+
     <p><strong>Кратко:</strong> Деньги, учет, капитал.</p>
+
     <p><strong>Описание:</strong> Финансовая грамотность:
+
     <ul>
+
       <li>Учёт расходов и доходов</li>
+
       <li>Финансовые цели и инвестиции</li>
+
       <li>Аналитика подписок, долгов</li>
+
       <li>Управление бюджетом</li>
+
     </ul></p>
+
     <p><strong>Результат:</strong> Ты контролируешь деньги, создаёшь капитал.</p>
+
   `,
+
   icon5: `
-    <h2>❤️ Отношения</h2>
-    <p><strong>Кратко:</strong> Люди, эмоции, близость.</p>
-    <p><strong>Описание:</strong> Эмоциональные связи:
-    <ul>
-      <li>Анализ окружения</li>
-      <li>Советы по общению и эмпатии</li>
-      <li>Внимание к близким</li>
-      <li>Инструменты улучшения отношений</li>
-    </ul></p>
-    <p><strong>Результат:</strong> Отношения становятся ресурсом, а не стрессом.</p>
-  `,
+
+  <h2>🏠 Квартирный рынок</h2>
+
+  <p><strong>Кратко:</strong> Аренда, покупка, продажа жилья.</p>
+
+  <p><strong>Описание:</strong> Умная платформа недвижимости:
+
+  <ul>
+
+    <li>Актуальные объявления от собственников</li>
+
+    <li>Фильтры по цене, району, типу жилья</li>
+
+    <li>Интерактивные карты и 3D-просмотры</li>
+
+    <li>Юридическая проверка и сопровождение сделок</li>
+
+  </ul></p>
+
+  <p><strong>Результат:</strong> Ты находишь идеальное жильё — без посредников и обмана.</p>
+
+`,
+
+
+
   icon6: `
-    <h2>🎉 Развлечения</h2>
-    <p><strong>Кратко:</strong> Радость, отдых, баланс.</p>
-    <p><strong>Описание:</strong> Баланс через удовольствие:
-    <ul>
-      <li>Идеи досуга и хобби</li>
-      <li>Умные рекомендации по отдыху</li>
-      <li>Журнал удовольствий</li>
-      <li>Релакс по уровню стресса</li>
-    </ul></p>
-    <p><strong>Результат:</strong> Ты отдыхаешь осознанно и наполняешься.</p>
-  `,
+
+  <h2>🚗 Автомобильный рынок</h2>
+
+  <p><strong>Кратко:</strong> Продажа, покупка, обмен авто.</p>
+
+  <p><strong>Описание:</strong> Современная площадка для автосделок:
+
+  <ul>
+
+    <li>Честные объявления от владельцев и салонов</li>
+
+    <li>Фильтры по марке, пробегу, цене</li>
+
+    <li>Проверка по VIN и история машины</li>
+
+    <li>Поддержка обмена, кредита, выкупа</li>
+
+  </ul></p>
+
+  <p><strong>Результат:</strong> Ты покупаешь или продаёшь авто с выгодой и уверенностью.</p>
+
+`,
+
+
+
+
+
   icon7: `
-    <h2>🏡 Дом</h2>
-    <p><strong>Кратко:</strong> Пространство, уют, порядок.</p>
-    <p><strong>Описание:</strong> Пространство для жизни:
-    <ul>
-      <li>Рутина по дому</li>
-      <li>Идеи для уюта и улучшения</li>
-      <li>Органайзер бытовых дел</li>
-      <li>Трекер комфорта</li>
-    </ul></p>
-    <p><strong>Результат:</strong> Дом — это твоя база, а не источник стресса.</p>
-  `,
+
+  <h2>🚕 Городское такси</h2>
+
+  <p><strong>Кратко:</strong> Быстрые поездки по городу.</p>
+
+  <p><strong>Описание:</strong> Умное городское передвижение:
+
+  <ul>
+
+    <li>Вызов авто по GPS в 1 клик</li>
+
+    <li>Поддержка нескольких тарифов</li>
+
+    <li>Бесконтактная оплата</li>
+
+    <li>Отслеживание движения на карте</li>
+
+  </ul></p>
+
+  <p><strong>Результат:</strong> Ты передвигаешься по городу быстро, удобно и без лишних ожиданий.</p>
+
+`,
+
+
+
   icon8: `
-    <h2>🌍 Окружение</h2>
-    <p><strong>Кратко:</strong> Люди, среда, влияние.</p>
-    <p><strong>Описание:</strong> Среда влияет на успех:
-    <ul>
-      <li>Анализ влияния людей</li>
-      <li>Комьюнити, менторы, связи</li>
-      <li>Удаление токсичного влияния</li>
-      <li>Создание среды роста</li>
-    </ul></p>
-    <p><strong>Результат:</strong> Ты в окружении, которое помогает, а не тормозит.</p>
-  `,
+
+  <h2>🚖 Междугороднее такси</h2>
+
+  <p><strong>Кратко:</strong> Поездки между городами на заказ.</p>
+
+  <p><strong>Описание:</strong> Услуги такси по регионам:
+
+  <ul>
+
+    <li>Подача авто в любой населённый пункт</li>
+
+    <li>Онлайн-бронирование и предварительный расчёт</li>
+
+    <li>Выбор комфорт-класса и водителя</li>
+
+    <li>Поддержка круглосуточных маршрутов</li>
+
+  </ul></p>
+
+  <p><strong>Результат:</strong> Удобные и безопасные поездки между городами без пересадок и суеты.</p>
+
+`,
+
+
+
   icon9: `
-    <h2>⏳ Время</h2>
-    <p><strong>Кратко:</strong> Приоритеты, фокус, эффективность.</p>
-    <p><strong>Описание:</strong> Управление временем:
-    <ul>
-      <li>Планирование по приоритетам</li>
-      <li>Анализ потери времени</li>
-      <li>Фокус и антипрокрастинация</li>
-      <li>Баланс между сферами</li>
-    </ul></p>
-    <p><strong>Результат:</strong> Ты живёшь осознанно, а не "успеваешь всё".</p>
-  `,
+
+  <h2>🚚 Международные перевозки</h2>
+
+  <p><strong>Кратко:</strong> Грузоперевозки между странами.</p>
+
+  <p><strong>Описание:</strong> Организация логистики на международном уровне:
+
+  <ul>
+
+    <li>Расчёт стоимости и сроков доставки</li>
+
+    <li>Интеграция с таможенными службами</li>
+
+    <li>Отслеживание в реальном времени</li>
+
+    <li>Автоматизация документооборота</li>
+
+  </ul></p>
+
+  <p><strong>Результат:</strong> Грузы доставляются вовремя, безопасно и с минимальными издержками.</p>
+
+`,
+
+
+
   icon10: `
-    <h2>🧭 Цели</h2>
-    <p><strong>Кратко:</strong> Направление, смысл, прогресс.</p>
-    <p><strong>Описание:</strong> Целеполагание:
-    <ul>
-      <li>Личный путь: от мечты к реальности</li>
-      <li>Метод OKR и визуализация</li>
-      <li>Награды и мотивация</li>
-      <li>Системный рост по шагам</li>
-    </ul></p>
-    <p><strong>Результат:</strong> Ты знаешь, куда идёшь — и идёшь туда каждый день.</p>
-  `,
+
+  <h2>🚛 Междугородние перевозки</h2>
+
+  <p><strong>Кратко:</strong> Грузы внутри страны.</p>
+
+  <p><strong>Описание:</strong> Эффективная доставка по регионам:
+
+  <ul>
+
+    <li>Маршруты между городами и складами</li>
+
+    <li>Управление автопарком и водителями</li>
+
+    <li>Контроль загрузки и оптимизация рейсов</li>
+
+    <li>Отчёты и аналитика по регионам</li>
+
+  </ul></p>
+
+  <p><strong>Результат:</strong> Ускоренная и оптимизированная логистика по всей стране.</p>
+
+`,
+
+
+
 };
 
 
+
+
+
 // Назначить обработчики кликов
+
 for (let i = 1; i <= 10; i++) {
+
   const icon = document.getElementById("icon" + i);
+
   icon.addEventListener("click", () => {
+
     const key = "icon" + i;
+
     modalContent.innerHTML = infoTexts[key];
+
     modal.classList.add("show");
+
   });
+
 }
 
+
+
 // Закрытие модального окна
+
 closeBtn.addEventListener("click", () => {
+
   modal.classList.remove("show");
+
 });
 
+
+
 modal.addEventListener("click", (e) => {
+
   if (e.target === modal) {
+
     modal.classList.remove("show");
+
   }
+
 });
+
+
 
 </script>
 
+
+
 </body>
+
 </html>
+
